@@ -6,12 +6,9 @@ import (
 	"log"
 	"os"
 
-	compute "cloud.google.com/go/compute/apiv1"
-	"cloud.google.com/go/compute/apiv1/computepb"
-	"github.com/urfave/cli/v2"
-	"google.golang.org/api/iterator"
-
+	"github.com/guni1192/google-cloud-subnet-checker/internal/gcloud"
 	"github.com/guni1192/google-cloud-subnet-checker/internal/ip"
+	"github.com/urfave/cli/v2"
 )
 
 func main() {
@@ -41,30 +38,15 @@ func main() {
 			desiredCIDR := c.String("desired-cidr")
 
 			ctx := context.Background()
-			client, err := compute.NewSubnetworksRESTClient(ctx)
+			client, err := gcloud.NewClient(ctx)
 			if err != nil {
-				return fmt.Errorf("failed to create compute client: %v", err)
+				return err
 			}
 			defer client.Close()
 
-			filter := fmt.Sprintf("network:projects/%s/global/networks/%s", projectID, network)
-			req := &computepb.ListSubnetworksRequest{
-				Project: projectID,
-				Filter:  &filter,
-			}
-
-			var existingCIDRs []string
-			it := client.List(ctx, req)
-			for {
-				subnet, err := it.Next()
-				if err == iterator.Done {
-					break
-				}
-				if err != nil {
-					return fmt.Errorf("failed to list subnets: %v", err)
-				}
-
-				existingCIDRs = append(existingCIDRs, *subnet.IpCidrRange)
+			existingCIDRs, err := client.ListSubnetworks(ctx, projectID, network)
+			if err != nil {
+				return err
 			}
 
 			if err := ip.CheckCIDROverlap(existingCIDRs, desiredCIDR); err != nil {
