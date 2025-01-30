@@ -22,8 +22,8 @@ func main() {
 				Required: true,
 			},
 			&cli.StringFlag{
-				Name:     "network",
-				Usage:    "Network name",
+				Name:     "region",
+				Usage:    "Region name",
 				Required: true,
 			},
 			&cli.StringFlag{
@@ -37,8 +37,8 @@ func main() {
 			},
 		},
 		Action: func(c *cli.Context) error {
-			projectID := c.String("project-id")
-			network := c.String("network")
+			projectID := c.String("project")
+			region := c.String("region")
 			desiredCIDR := c.String("desired-cidr")
 			debug := c.Bool("debug")
 
@@ -58,7 +58,7 @@ func main() {
 			}
 			defer client.Close()
 
-			existingCIDRs, err := client.ListSubnetworks(ctx, projectID, network)
+			existingCIDRs, err := client.ListSubnetworks(ctx, projectID, region)
 			if err != nil {
 				return err
 			}

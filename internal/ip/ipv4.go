@@ -3,23 +3,28 @@ package ip
 import (
 	"fmt"
 	"net"
+
+	"github.com/guni1192/google-cloud-subnet-checker/internal/gcloud"
 )
 
 // CheckCIDROverlap checks if the desired CIDR overlaps with any of the existing subnets.
-func CheckCIDROverlap(existingCIDRs []string, desiredCIDR string) error {
+func CheckCIDROverlap(subnets []gcloud.Subnetwork, desiredCIDR string) error {
 	_, desiredCIDRBlock, err := net.ParseCIDR(desiredCIDR)
 	if err != nil {
 		return fmt.Errorf("failed to parse desired CIDR: %v", err)
 	}
 
-	for _, existingCIDR := range existingCIDRs {
-		_, subnetCIDR, err := net.ParseCIDR(existingCIDR)
-		if err != nil {
-			return fmt.Errorf("failed to parse subnet CIDR: %v", err)
-		}
+	for _, subnet := range subnets {
 
-		if cidrOverlap(subnetCIDR, desiredCIDRBlock) {
-			return fmt.Errorf("CIDR %s overlaps with existing subnet %s", desiredCIDR, existingCIDR)
+		for _, ipRange := range subnet.IPRanges {
+			_, subnetCIDR, err := net.ParseCIDR(ipRange.IPv4Range)
+			if err != nil {
+				return fmt.Errorf("failed to parse subnet CIDR: %v", err)
+			}
+
+			if cidrOverlap(subnetCIDR, desiredCIDRBlock) {
+				return fmt.Errorf("CIDR %s overlaps with existing subnet: %v", desiredCIDR, subnet)
+			}
 		}
 	}
 
