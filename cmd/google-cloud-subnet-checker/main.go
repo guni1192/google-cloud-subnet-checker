@@ -11,6 +11,25 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+// newLogger creates a new slog.Logger with the specified debug level
+func newLogger(debug bool) *slog.Logger {
+	handlerOptions := &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+			if a.Key == slog.TimeKey {
+				return slog.Attr{}
+			}
+			return a
+		},
+	}
+
+	if debug {
+		handlerOptions.Level = slog.LevelDebug
+	}
+
+	return slog.New(slog.NewTextHandler(os.Stdout, handlerOptions))
+}
+
 func main() {
 	app := &cli.App{
 		Name:  "google-cloud-subnet-checker",
@@ -42,13 +61,8 @@ func main() {
 			desiredCIDR := c.String("cidr")
 			debug := c.Bool("debug")
 
-			// Set up slog with appropriate log level
-			var logger *slog.Logger
-			if debug {
-				logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
-			} else {
-				logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-			}
+			// Set up logger
+			logger := newLogger(debug)
 			slog.SetDefault(logger)
 
 			ctx := context.Background()

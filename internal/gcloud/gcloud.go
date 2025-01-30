@@ -65,7 +65,9 @@ func (c *Client) ListSubnetworks(ctx context.Context, projectID, region string) 
 			RangeName: "primary",
 			IPv4Range: *subnet.IpCidrRange,
 		})
+		slog.Debug("subnet primary ip range", "name", *subnet.Name, "ipRange", *subnet.IpCidrRange)
 		for _, ipRange := range subnet.SecondaryIpRanges {
+			slog.Debug("subnet secondary ip range", "name", *subnet.Name, "rangeName", *ipRange.RangeName, "ipRange", *ipRange.IpCidrRange)
 			ipRanges = append(ipRanges, IPRange{
 				RangeName: *ipRange.RangeName,
 				IPv4Range: *ipRange.IpCidrRange,
@@ -77,7 +79,6 @@ func (c *Client) ListSubnetworks(ctx context.Context, projectID, region string) 
 			Region:   *subnet.Region,
 			IPRanges: ipRanges,
 		})
-		slog.Debug("Subnet found", "name", *subnet.Name, "cidr", *subnet.IpCidrRange)
 	}
 
 	return subnets, nil
