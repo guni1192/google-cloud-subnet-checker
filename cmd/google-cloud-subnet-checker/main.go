@@ -27,7 +27,7 @@ func main() {
 				Required: true,
 			},
 			&cli.StringFlag{
-				Name:     "desired-cidr",
+				Name:     "cidr",
 				Usage:    "Desired CIDR for the new subnet",
 				Required: true,
 			},
@@ -39,7 +39,7 @@ func main() {
 		Action: func(c *cli.Context) error {
 			projectID := c.String("project")
 			region := c.String("region")
-			desiredCIDR := c.String("desired-cidr")
+			desiredCIDR := c.String("cidr")
 			debug := c.Bool("debug")
 
 			// Set up slog with appropriate log level
