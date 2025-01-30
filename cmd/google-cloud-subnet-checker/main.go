@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 
 	"github.com/guni1192/google-cloud-subnet-checker/internal/gcloud"
@@ -17,7 +17,7 @@ func main() {
 		Usage: "Check for CIDR overlap in a Google Cloud network before creating a new subnet",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:     "project-id",
+				Name:     "project",
 				Usage:    "Google Cloud Project ID",
 				Required: true,
 			},
@@ -31,11 +31,25 @@ func main() {
 				Usage:    "Desired CIDR for the new subnet",
 				Required: true,
 			},
+			&cli.BoolFlag{
+				Name:  "debug",
+				Usage: "Enable debug logging",
+			},
 		},
 		Action: func(c *cli.Context) error {
 			projectID := c.String("project-id")
 			network := c.String("network")
 			desiredCIDR := c.String("desired-cidr")
+			debug := c.Bool("debug")
+
+			// Set up slog with appropriate log level
+			var logger *slog.Logger
+			if debug {
+				logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
+			} else {
+				logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+			}
+			slog.SetDefault(logger)
 
 			ctx := context.Background()
 			client, err := gcloud.NewClient(ctx)
@@ -60,6 +74,6 @@ func main() {
 
 	err := app.Run(os.Args)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
 	}
 }

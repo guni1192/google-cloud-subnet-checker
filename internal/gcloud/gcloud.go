@@ -3,6 +3,7 @@ package gcloud
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	compute "cloud.google.com/go/compute/apiv1"
 	"cloud.google.com/go/compute/apiv1/computepb"
@@ -46,6 +47,7 @@ func (c *Client) ListSubnetworks(ctx context.Context, projectID, network string)
 		if err != nil {
 			return nil, fmt.Errorf("failed to list subnets: %v", err)
 		}
+		slog.Debug("Subnet found", "name", subnet.Name, "cidr", subnet.IpCidrRange)
 
 		existingCIDRs = append(existingCIDRs, *subnet.IpCidrRange)
 	}
