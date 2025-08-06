@@ -11,7 +11,7 @@ A command-line tool to check for CIDR overlap before creating a new subnet in Go
 ## Installation
 
 ```
-go install github.com/guni1192/google-cloud-subnet-checker@latest
+go install github.com/guni1192/google-cloud-subnet-checker/cmd/google-cloud-subnet-checker@latest
 ```
 
 ### Options
